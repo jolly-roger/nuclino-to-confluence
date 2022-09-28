@@ -127,6 +127,16 @@ def create_page(title, body, ancestor, username, password, confluenceApiUrl, spa
                   }
               },
               'ancestors': ancestors,
+              'metadata': {
+                'properties': {
+                  'content-appearance-draft': {
+                    'value': 'full-width'
+                  },
+                  'content-appearance-published': {
+                    'value': 'full-width'
+                  }
+                }
+              }
               }
 
   logger.LOGGER.info("data: %s", json.dumps(new_page))

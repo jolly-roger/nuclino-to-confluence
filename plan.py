@@ -4,7 +4,8 @@ import re
 from shutil import copy
 
 import logger
-import constants
+
+LINK_REGEXP = r'^.* \[.*]\(<(.*)>\)'
 
 def check_plan_requirements(workFolder, planFolder):
   """
@@ -34,7 +35,7 @@ def is_index_file(file_path):
 
   :return:boolean
   """
-  pattern = re.compile(constants.LINK_REGEXP)
+  pattern = re.compile(LINK_REGEXP)
   try:
     with open(file_path) as index_file:
       for line in index_file:
@@ -71,7 +72,7 @@ def process_index(file_path, file_name, workFolder, planFolder):
   try:
     with open(os.path.join(workFolder, file_name)) as index_file:
       for line in index_file:
-        md_file = os.path.join(workFolder, re.search(constants.LINK_REGEXP, line).group(1))
+        md_file = os.path.join(workFolder, re.search(LINK_REGEXP, line).group(1))
         if not os.path.isfile(md_file):
           escaped_md_file = md_file.replace("\\", "")
           if os.path.isfile(escaped_md_file):
