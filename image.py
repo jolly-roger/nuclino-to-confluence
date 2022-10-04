@@ -17,11 +17,11 @@ def convert_img_block(html):
       alt = data.group(1)
       src = data.group(2)
 
-      attachments.append(src)
+      if alt:
+        attachments.append(src)    
+        conf_ml = conf_ml + '<ri:attachment ri:filename="' + alt + '" />'
+        conf_ml = conf_ml + '</ac:image>'
 
-      conf_ml = conf_ml + '<ri:attachment ri:filename="' + alt + '" />'
-      conf_ml = conf_ml + '</ac:image>'
-
-      html = html.replace(image, conf_ml)
+        html = html.replace(image, conf_ml)        
 
   return (html, attachments)

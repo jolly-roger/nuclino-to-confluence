@@ -91,7 +91,7 @@ def get_page_id(title, ancestor, username, password, confluenceApiUrl, spaceKey)
   logger.LOGGER.error('Response: %s', response.content)
   return ""
 
-def create_page(title, body, ancestor, username, password, confluenceApiUrl, spaceKey):
+def create_page(title, body, ancestor, ancestor_titles, username, password, confluenceApiUrl, spaceKey):
   """
   Create a new page
 
@@ -146,6 +146,19 @@ def create_page(title, body, ancestor, username, password, confluenceApiUrl, spa
     response.raise_for_status()
   except requests.exceptions.HTTPError as excpt:
     logger.LOGGER.error("error: %s - %s", excpt, response.content)
+    ancestor_titles_len = len(ancestor_titles)
+    if (ancestor_titles_len > 0):
+      result = create_page(
+        ancestor_titles[ancestor_titles_len - 1] + ': ' + title,
+        body,
+        ancestor,
+        ancestor_titles[:-1],
+        username,
+        password,
+        confluenceApiUrl,
+        spaceKey)
+      if (result):
+        return result
     exit(1)
 
   if response.status_code == 200:
@@ -156,7 +169,7 @@ def create_page(title, body, ancestor, username, password, confluenceApiUrl, spa
 
     logger.LOGGER.info('Page created in %s with ID: %s.', space_name, page_id)
     logger.LOGGER.info('URL: %s', link)
-    return page_id
+    return (page_id, title)
 
   logger.LOGGER.error('Could not create page.')
   logger.LOGGER.info('Response Status:\n%s', response.status_code)
@@ -179,11 +192,12 @@ def execute_import(username, password, confluenceApiUrl, spaceKey, workFolder, p
     elems = page_path.split("/")[1:]
     ancestor_id = confluence_pages["/" + "/".join(elems[:-1])]["page_id"] if len(elems) > 1 else base_id
     page_id = base_id
+    page_titles = elems if len(elems) > 0 else []
     if page_path:
-      page_id = create_page(elems[len(elems) - 1], "", ancestor_id, username, password, confluenceApiUrl, spaceKey)
+      page_id, page_title = create_page(elems[len(elems) - 1], "", ancestor_id, page_titles, username, password, confluenceApiUrl, spaceKey)
       confluence_pages[page_path] = {"page_id": page_id}
     for md_file in files:
       body, attachments = page.get_body(os.path.join(workFolder, md_file))
       file_name = md_file[:-12]
-      page_id = create_page(file_name, body, page_id, username, password, confluenceApiUrl, spaceKey)
-      pageAttachments.upload_attachments(page_id, attachments, username, password, confluenceApiUrl, workFolder)
+      current_page_id, current_page_title = create_page(file_name, body, page_id, page_titles, username, password, confluenceApiUrl, spaceKey)
+      pageAttachments.upload_attachments(current_page_id, attachments, username, password, confluenceApiUrl, workFolder)

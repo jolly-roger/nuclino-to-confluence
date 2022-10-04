@@ -8,6 +8,7 @@ import image
 import refs
 import breakline
 import table
+import tags
 
 def get_body(file_path):
   """
@@ -25,5 +26,6 @@ def get_body(file_path):
   html = refs.process_refs(html)
   html = breakline.convert_br_block(html)
   html = table.convert_table_block(html)
+  html = tags.convert_tag_block(html)
 
   return (html, attachments)
